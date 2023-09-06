@@ -2,7 +2,6 @@ package com.ptk.tmdb_sample_jpcp.model.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 
 
 @Serializable
@@ -57,5 +56,8 @@ data class MovieModel(
     val adult: Boolean? = null,
 
     @SerialName("vote_count")
-    val voteCount: Int? = null
+    val voteCount: Int? = null,
+
+    @SerialName("is_fav")
+    var isFav: Boolean = false,
 )

@@ -1,6 +1,8 @@
 package com.ptk.tmdb_sample_jpcp.network
 
 
+import com.ptk.tmdb_sample_jpcp.model.dto.CastResponseModel
+import com.ptk.tmdb_sample_jpcp.model.dto.MovieDetailResponseModel
 import com.ptk.tmdb_sample_jpcp.model.dto.MovieResponseModel
 import com.ptk.tmdb_sample_jpcp.util.Constants.BASE_URL
 import com.ptk.tmdb_sample_jpcp.util.Constants.TOKEN
@@ -36,6 +38,20 @@ public class ApiServiceImpl @Inject constructor(
 
     override suspend fun getUpcomingMovies(): MovieResponseModel = client.get {
         url(BASE_URL + APIRoutes.getUpcomingMovies)
+        header("Authorization", "Bearer $TOKEN")
+        contentType(ContentType.Application.Json)
+        parameter("page", 1)
+    }
+
+    override suspend fun getMovieDetail(movieId: Int): MovieDetailResponseModel = client.get {
+        url(BASE_URL + APIRoutes.getMovieDetail + movieId)
+        header("Authorization", "Bearer $TOKEN")
+        contentType(ContentType.Application.Json)
+        parameter("page", 1)
+    }
+
+    override suspend fun getCasts(movieId: Int): CastResponseModel = client.get {
+        url(BASE_URL + APIRoutes.getMovieDetail + movieId + "/credits")
         header("Authorization", "Bearer $TOKEN")
         contentType(ContentType.Application.Json)
         parameter("page", 1)

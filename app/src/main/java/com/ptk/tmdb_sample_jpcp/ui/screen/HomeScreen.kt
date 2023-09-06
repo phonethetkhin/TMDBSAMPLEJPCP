@@ -1,5 +1,7 @@
 package com.ptk.tmdb_sample_jpcp.ui.screen
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,13 +29,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ptk.tmdb_sample_jpcp.R
 import com.ptk.tmdb_sample_jpcp.model.dto.MovieModel
-import com.ptk.tmdb_sample_jpcp.ui.ui_resource.theme.Green
+import com.ptk.tmdb_sample_jpcp.ui.ui_resource.navigation.Routes
+import com.ptk.tmdb_sample_jpcp.ui.ui_resource.theme.LightBlue
 import com.ptk.tmdb_sample_jpcp.ui.ui_states.HomeUIStates
 import com.ptk.tmdb_sample_jpcp.util.Constants
 import com.ptk.tmdb_sample_jpcp.viewmodel.HomeViewModel
@@ -48,20 +50,23 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel,
 ) {
     val uiStates by homeViewModel.uiStates.collectAsState()
+    Log.e("TESTASDFAS3", uiStates.recommendList.toString())
 
     LaunchedEffect(key1 = "") {
-        withContext(Dispatchers.IO) { homeViewModel.getPopularMovies() }
-        withContext(Dispatchers.IO) { homeViewModel.getNowPlayingMovies() }
-        withContext(Dispatchers.IO) { homeViewModel.getUpcomingList() }
+        if (uiStates.recommendList.isEmpty()) {
+            withContext(Dispatchers.IO) { homeViewModel.getPopularMovies() }
+            withContext(Dispatchers.IO) { homeViewModel.getNowPlayingMovies() }
+            withContext(Dispatchers.IO) { homeViewModel.getUpcomingList() }
+        }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Green),
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = LightBlue),
                 title = {
                     Text(
                         "Home",
@@ -80,14 +85,24 @@ fun HomeScreen(
             )
         }
     ) {
-        HomeScreenContent(navController, it.calculateTopPadding().value, uiStates)
+        HomeScreenContent(
+            navController,
+            it.calculateTopPadding().value,
+            uiStates,
+            homeViewModel,
+        )
 
     }
 
 }
 
 @Composable
-fun HomeScreenContent(navController: NavController, topMargin: Float, uiStates: HomeUIStates) {
+fun HomeScreenContent(
+    navController: NavController,
+    topMargin: Float,
+    uiStates: HomeUIStates,
+    homeViewModel: HomeViewModel,
+) {
     LazyColumn(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -95,16 +110,50 @@ fun HomeScreenContent(navController: NavController, topMargin: Float, uiStates: 
             .fillMaxSize()
             .padding(top = topMargin.dp)
     ) {
-        item { RecommendedMoviesUI("Recommended Movies", uiStates.recommendList) }
-        item { RecommendedMoviesUI("Now Playing Movies", uiStates.nowPlayingList) }
-        item { RecommendedMoviesUI("Upcoming Movies", uiStates.upcomingList) }
+        item {
+            RecommendedMoviesUI(
+                "Recommended Movies",
+                uiStates.recommendList,
+                navController,
+                homeViewModel,
+                uiStates,
+                0
+            )
+        }
+        item {
+            RecommendedMoviesUI(
+                "Now Playing Movies",
+                uiStates.nowPlayingList,
+                navController,
+                homeViewModel,
+                uiStates,
+                1
+            )
+        }
+        item {
+            RecommendedMoviesUI(
+                "Upcoming Movies",
+                uiStates.upcomingList,
+                navController,
+                homeViewModel,
+                uiStates,
+                2
+            )
+        }
 
     }
 
 }
 
 @Composable
-fun RecommendedMoviesUI(title: String, list: ArrayList<MovieModel>) {
+fun RecommendedMoviesUI(
+    title: String,
+    list: ArrayList<MovieModel>,
+    navController: NavController,
+    homeViewModel: HomeViewModel,
+    uiStates: HomeUIStates,
+    status: Int = 0,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -117,32 +166,51 @@ fun RecommendedMoviesUI(title: String, list: ArrayList<MovieModel>) {
             modifier = Modifier.padding(bottom = 16.sdp)
         )
 
-        MovieList(movies = list)
+        MovieList(movies = list, navController, homeViewModel, status, uiStates)
     }
 }
 
 @Composable
-fun MovieList(movies: ArrayList<MovieModel>) {
+fun MovieList(
+    movies: ArrayList<MovieModel>,
+    navController: NavController,
+    homeViewModel: HomeViewModel,
+    status: Int,
+    uiStates: HomeUIStates,
+) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         items(movies) { movie ->
-            MovieListItem(movie = movie)
+            MovieListItem(
+                movie = movie,
+                navController,
+                homeViewModel,
+                status,
+                uiStates
+            )
         }
     }
 }
 
 @Composable
-fun MovieListItem(movie: MovieModel) {
+fun MovieListItem(
+    movie: MovieModel,
+    navController: NavController,
+    homeViewModel: HomeViewModel,
+    status: Int,
+    uiStates: HomeUIStates,
+) {
     Card(
         modifier = Modifier
             .width(160.dp)
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { navController.navigate(Routes.DetailScreen.route + "/movieId=${movie.id}/isFav=${movie.isFav}/status=$status") },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = Green,
+            containerColor = LightBlue,
         ),
     ) {
         Column(
@@ -158,7 +226,14 @@ fun MovieListItem(movie: MovieModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    )
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -185,8 +260,10 @@ fun MovieListItem(movie: MovieModel) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = null,
-//                    tint = if (movie.isFavorite) Color.Red else Color.Gray,
-                    modifier = Modifier.size(20.dp)
+                    tint = if (movie.isFav) Color.Red else Color.White,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { homeViewModel.toggleFav(movie.id!!, status) }
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))

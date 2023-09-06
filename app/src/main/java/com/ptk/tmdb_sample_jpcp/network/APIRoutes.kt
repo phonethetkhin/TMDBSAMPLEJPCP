@@ -5,5 +5,7 @@ object APIRoutes {
     const val getNowPlayingMovies = "3/movie/now_playing"
     const val getUpcomingMovies = "3/movie/upcoming"
 
+    const val getMovieDetail = "3/movie/"
+
 
 }
