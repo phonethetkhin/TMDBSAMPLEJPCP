@@ -127,50 +127,38 @@ class HomeViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun toggleFav(movieId: Int, status: Int) {
-        Log.e("TESTASDF1", movieId.toString())
-        Log.e("TESTASDF2", status.toString())
-        Log.e("TESTASDF3", _uiStates.value.recommendList.toString())
-        Log.e(
-            "TESTASDF4",
-            _uiStates.value.recommendList.find { it.id == movieId }?.isFav.toString()
-        )
+    fun toggleFav(movieId: Int) {
         val movieModel = _uiStates.value.recommendList.find { it.id == movieId }
+        val movieModel2 = _uiStates.value.nowPlayingList.find { it.id == movieId }
+        val movieModel3 = _uiStates.value.upcomingList.find { it.id == movieId }
+
         _uiStates.update {
             it.copy(recommendList = _uiStates.value.recommendList.mapIndexed { index, details ->
-                if (_uiStates.value.recommendList.indexOf(movieModel) == index) details.copy(isFav = !details.isFav)
+                if (_uiStates.value.recommendList.indexOf(movieModel) == index) details.copy(
+                    isFav = !details.isFav
+                )
                 else details
             } as ArrayList<MovieModel>)
         }
 
-        /* when (status) {
-                 0 -> {
-                     val movie = _uiStates.value.recommendList.find { it.id == movieId }!!
-                     Log.e("TESTASDFAS", movie.isFav.toString())
+        _uiStates.update {
+            it.copy(nowPlayingList = _uiStates.value.nowPlayingList.mapIndexed { index, details ->
+                if (_uiStates.value.nowPlayingList.indexOf(movieModel2) == index) details.copy(
+                    isFav = !details.isFav
+                )
+                else details
+            } as ArrayList<MovieModel>)
+        }
 
-                     movie.isFav =!movie.isFav
-                     Log.e("TESTASDFAS2", movie.isFav.toString())
+        _uiStates.update {
+            it.copy(upcomingList = _uiStates.value.upcomingList.mapIndexed { index, details ->
+                if (_uiStates.value.upcomingList.indexOf(movieModel3) == index) details.copy(
+                    isFav = !details.isFav
+                )
+                else details
+            } as ArrayList<MovieModel>)
+        }
 
-                     _uiStates.value.recommendList.find { it.id == movieId }?.isFav =
-                         !_uiStates.value.recommendList.find { it.id == movieId }!!.isFav
-                     _uiStates.update { it.copy(recommendList = _uiStates.value.recommendList) }
-
-                 }
-
-                 1 -> {
-                     _uiStates.value.nowPlayingList.find { it.id == movieId }?.isFav =
-                         !_uiStates.value.nowPlayingList.find { it.id == movieId }!!.isFav
-                     _uiStates.update { it.copy(nowPlayingList = _uiStates.value.nowPlayingList) }
-
-                 }
-
-                 2 -> {
-                     _uiStates.value.upcomingList.find { it.id == movieId }?.isFav =
-                         !_uiStates.value.upcomingList.find { it.id == movieId }!!.isFav
-                     _uiStates.update { it.copy(upcomingList = _uiStates.value.upcomingList) }
-
-                 }
-             }*/
     }
 
 }

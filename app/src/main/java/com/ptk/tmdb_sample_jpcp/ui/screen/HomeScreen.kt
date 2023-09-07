@@ -1,5 +1,6 @@
 package com.ptk.tmdb_sample_jpcp.ui.screen
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,6 +35,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ptk.tmdb_sample_jpcp.R
 import com.ptk.tmdb_sample_jpcp.model.dto.MovieModel
+import com.ptk.tmdb_sample_jpcp.ui.ui_resource.composables.AnimatedShimmer
 import com.ptk.tmdb_sample_jpcp.ui.ui_resource.navigation.Routes
 import com.ptk.tmdb_sample_jpcp.ui.ui_resource.theme.LightBlue
 import com.ptk.tmdb_sample_jpcp.ui.ui_states.HomeUIStates
@@ -46,6 +48,7 @@ import kotlinx.coroutines.withContext
 
 
 //UIs
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -85,12 +88,20 @@ fun HomeScreen(
             )
         }
     ) {
-        HomeScreenContent(
-            navController,
-            it.calculateTopPadding().value,
-            uiStates,
-            homeViewModel,
-        )
+        if (uiStates.recommendList.isNotEmpty() && uiStates.nowPlayingList.isNotEmpty() && uiStates.upcomingList.isNotEmpty()) {
+            HomeScreenContent(
+                navController,
+                it.calculateTopPadding().value,
+                uiStates,
+                homeViewModel,
+            )
+        } else {
+            Column(modifier = Modifier.padding(top = it.calculateTopPadding().value.dp)) {
+                repeat(7) {
+                    AnimatedShimmer()
+                }
+            }
+        }
 
     }
 
@@ -117,7 +128,6 @@ fun HomeScreenContent(
                 navController,
                 homeViewModel,
                 uiStates,
-                0
             )
         }
         item {
@@ -127,7 +137,6 @@ fun HomeScreenContent(
                 navController,
                 homeViewModel,
                 uiStates,
-                1
             )
         }
         item {
@@ -137,7 +146,6 @@ fun HomeScreenContent(
                 navController,
                 homeViewModel,
                 uiStates,
-                2
             )
         }
 
@@ -152,7 +160,6 @@ fun RecommendedMoviesUI(
     navController: NavController,
     homeViewModel: HomeViewModel,
     uiStates: HomeUIStates,
-    status: Int = 0,
 ) {
     Column(
         modifier = Modifier
@@ -166,7 +173,7 @@ fun RecommendedMoviesUI(
             modifier = Modifier.padding(bottom = 16.sdp)
         )
 
-        MovieList(movies = list, navController, homeViewModel, status, uiStates)
+        MovieList(movies = list, navController, homeViewModel, uiStates)
     }
 }
 
@@ -175,7 +182,6 @@ fun MovieList(
     movies: ArrayList<MovieModel>,
     navController: NavController,
     homeViewModel: HomeViewModel,
-    status: Int,
     uiStates: HomeUIStates,
 ) {
     LazyRow(
@@ -186,7 +192,6 @@ fun MovieList(
                 movie = movie,
                 navController,
                 homeViewModel,
-                status,
                 uiStates
             )
         }
@@ -198,14 +203,13 @@ fun MovieListItem(
     movie: MovieModel,
     navController: NavController,
     homeViewModel: HomeViewModel,
-    status: Int,
     uiStates: HomeUIStates,
 ) {
     Card(
         modifier = Modifier
             .width(160.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable { navController.navigate(Routes.DetailScreen.route + "/movieId=${movie.id}/isFav=${movie.isFav}/status=$status") },
+            .clickable { navController.navigate(Routes.DetailScreen.route + "/movieId=${movie.id}/isFav=${movie.isFav}") },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
         ),
@@ -263,7 +267,7 @@ fun MovieListItem(
                     tint = if (movie.isFav) Color.Red else Color.White,
                     modifier = Modifier
                         .size(20.dp)
-                        .clickable { homeViewModel.toggleFav(movie.id!!, status) }
+                        .clickable { homeViewModel.toggleFav(movie.id!!) }
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))

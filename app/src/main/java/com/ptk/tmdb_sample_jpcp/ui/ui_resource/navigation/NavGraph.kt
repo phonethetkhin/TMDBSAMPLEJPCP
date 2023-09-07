@@ -21,7 +21,8 @@ fun NavGraph(
             HomeScreen(navController, homeViewModel)
         }
 
-        composable(route = Routes.DetailScreen.route + "/movieId={movieId}/isFav={isFav}/status={status}",
+        composable(
+            route = Routes.DetailScreen.route + "/movieId={movieId}/isFav={isFav}",
             arguments = listOf(
                 navArgument("movieId") {
                     type = NavType.IntType
@@ -29,16 +30,12 @@ fun NavGraph(
                 navArgument("isFav") {
                     type = NavType.BoolType
                 },
-                navArgument("status") {
-                    type = NavType.IntType
-                }
 
-            )) { nav ->
+                )
+        ) { nav ->
             val movieId = nav.arguments?.getInt("movieId")!!
             val isFav = nav.arguments?.getBoolean("isFav")!!
-            val status = nav.arguments?.getInt("status")!!
-
-            DetailScreen(navController, movieId, homeViewModel, isFav,status)
+            DetailScreen(navController, movieId, homeViewModel, isFav)
         }
 
 

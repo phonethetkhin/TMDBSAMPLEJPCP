@@ -10,12 +10,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -57,7 +59,6 @@ fun DetailScreen(
     movieId: Int,
     homeViewModel: HomeViewModel,
     isFav: Boolean,
-    status: Int,
     detailViewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiStates by detailViewModel.uiStates.collectAsState()
@@ -75,7 +76,6 @@ fun DetailScreen(
             movie = it,
             homeViewModel,
             detailViewModel,
-            status
         )
     }
 
@@ -88,7 +88,6 @@ fun DetailScreenContent(
     movie: MovieDetailResponseModel,
     homeViewModel: HomeViewModel,
     detailViewModel: DetailViewModel,
-    status: Int,
 ) {
 
     Column(
@@ -97,19 +96,29 @@ fun DetailScreenContent(
             .verticalScroll(rememberScrollState())
     ) {
         // Movie Cover Photo
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(Constants.IMAGE_PATH_HELPER + movie.backdropPath)
-                .crossfade(true)
-                .build(),
-            placeholder = painterResource(R.drawable.placeholder),
-            contentDescription = "Movie Poster",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
+        Box() {
 
-        )
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(Constants.IMAGE_PATH_HELPER + movie.backdropPath)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.placeholder),
+                contentDescription = "Movie Poster",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+
+            )
+            IconButton(onClick = { navController.navigateUp() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIosNew,
+                    contentDescription = "Back Arrow Icon",
+                    tint = Color.White
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.sdp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -129,7 +138,7 @@ fun DetailScreenContent(
                     .padding(end = 8.sdp)
                     .clickable {
                         detailViewModel.toggleFav()
-                        homeViewModel.toggleFav(movie.id!!, status)
+                        homeViewModel.toggleFav(movie.id!!)
                     },
             )
             Text(
